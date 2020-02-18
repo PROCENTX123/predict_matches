@@ -141,7 +141,7 @@ def create_team_feature_dataset(matches, players, avg_stats, hero_pairs):
                 feature_dataset_by_team.append(team_2_features)
 
     feature_dataset_by_team = pd.DataFrame(feature_dataset_by_team)
-    return feature_dataset_by_team
+    return feature_dataset_by_team.fillna(0)
 
 
 def create_dataset_with_features(players, matches, feature_list):

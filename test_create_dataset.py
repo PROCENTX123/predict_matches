@@ -24,7 +24,7 @@ def test_player_avg_stats():
                        'gold_sell',
                        'gold_destroying_structure',
                        'gold_killing_roshan',
-                       'hero_damage',]
+                       'hero_damage', ]
     player_avg_stats(players, matches, feature_columns)
 
 
@@ -35,7 +35,7 @@ def test_create_team_feature_dataset():
                        'gold_sell',
                        'gold_destroying_structure',
                        'gold_killing_roshan',
-                       'hero_damage',]
+                       'hero_damage', ]
     avg_stats = player_avg_stats(players, matches, feature_columns)
     hero_pairs = get_hero_pairs(players, matches)
     create_team_feature_dataset(matches, players, avg_stats, hero_pairs)
@@ -46,12 +46,18 @@ def test_create_team_feature_dataset():
 # test_player_avg_stats()
 # test_create_team_feature_dataset()
 
-print(create_dataset_with_features(players=read_file_local('data_files/selected_players.csv'),
-                                   matches=read_file_local('data_files/match.csv'),
-                                   feature_list=[
-                                       'unit_order_move_item',
-                                       'gold_sell',
-                                       'gold_destroying_structure',
-                                       'gold_killing_roshan',
-                                       'hero_damage',
-                                   ]))
+def test_full_dataset():
+    players = read_file_local('data_files/selected_players.csv')
+    duration_heroes = read_file_local('data_files/duration_heroes.csv')
+    players["kda"] = players[['deaths', 'kills', 'assists']].apply(get_kda, axis=1)
+    players["net_worth"] = players[['gold', 'gold_spent']].apply(get_net_worth, axis=1)
+    players["duration_heroes"] = players[['hero_id']].apply(lambda x: get_hero_avg_duration(x, duration_heroes), axis=1)
+
+    create_dataset_with_features(players=players, matches=read_file_local('data_files/match.csv'),
+                                 feature_list=[
+                                     'gold_per_min', 'xp_per_min', 'denies', 'last_hits', 'hero_damage',
+                                     'hero_healing', 'tower_damage', 'kda', 'net_worth', 'duration_heroes',
+                                 ]).to_csv("data_files/original_ds_not_normalized.csv", index=False)
+
+
+test_full_dataset()

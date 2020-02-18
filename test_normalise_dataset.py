@@ -3,7 +3,7 @@ from utils import read_file_local
 
 
 def test_normalize_dataset_values():
-    players = read_file_local('data_files/selected_players.csv')
-    print(normalize_dataset_values(players[['gold_sell', 'gold_destroying_structure', 'gold_killing_roshan']].fillna(0)))
+    players = read_file_local('data_files/original_ds_not_normalized.csv')
+    normalize_dataset_values(players.fillna(0)).to_csv("data_files/original_ds_normalized.csv", index=False)
 
 test_normalize_dataset_values()
