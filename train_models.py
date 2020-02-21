@@ -2,8 +2,10 @@ from sklearn import tree
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import RFE
 from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.metrics import classification_report, confusion_matrix, log_loss, roc_auc_score, accuracy_score
-from sklearn.model_selection import train_test_split, KFold, ShuffleSplit, cross_val_score
+from sklearn.model_selection import train_test_split
+from xgboost import XGBClassifier
+from catboost import CatBoostClassifier
+from lightgbm import LGBMClassifier
 
 
 def split_scikit(X, y, test_size=0.5, shuffle=True):
@@ -51,38 +53,74 @@ def linear_regression_rfe(train_x, test_x, train_y, test_y, no_of_features=5):
 
 def logistic_regression(train_x, test_x, train_y, test_y):
     model = LogisticRegression().fit(train_x, train_y)
-    train_predict = threshold(model.predict(train_x))
-    test_predict = threshold(model.predict(test_x))
-    return train_predict, test_predict
+    train_predict = model.predict(train_x)
+    test_predict = model.predict(test_x)
+
+    train_predict_proba = model.predict_proba(train_x)[::,1]
+    test_predict_proba = model.predict_proba(test_x)[::,1]
+    return train_predict, test_predict, train_predict_proba, test_predict_proba
 
 
 def logistic_regression_rfe(train_x, test_x, train_y, test_y, no_of_features=5):
     rfe = RFE(LogisticRegression(), no_of_features)
     selector = rfe.fit(train_x, train_y)
-    train_predict = threshold(selector.predict(train_x))
-    test_predict = threshold(selector.predict(test_x))
-    return train_predict, test_predict
+    train_predict = selector.predict(train_x)
+    test_predict = selector.predict(test_x)
+
+    train_predict_proba = selector.predict_proba(train_x)[::,1]
+    test_predict_proba = selector.predict_proba(test_x)[::,1]
+    return train_predict, test_predict, train_predict_proba, test_predict_proba
 
 
 def decision_tree(train_x, test_x, train_y, test_y, tree_depth=5):
     clf = tree.DecisionTreeClassifier(max_depth=tree_depth)
     clf = clf.fit(train_x, train_y)
-    train_predict = threshold(clf.predict(train_x))
-    test_predict = threshold(clf.predict(test_x))
-    return train_predict, test_predict
+    train_predict = clf.predict(train_x)
+    test_predict = clf.predict(test_x)
+
+    train_predict_proba = clf.predict_proba(train_x)[::,1]
+    test_predict_proba = clf.predict_proba(test_x)[::,1]
+    return train_predict, test_predict, train_predict_proba, test_predict_proba
 
 
-def random_forest(train_x, test_x, train_y, test_y, tree_depth=5):
-    model_rf = RandomForestClassifier(n_estimators=100, n_jobs=4,
-                                      max_depth=None, random_state=17)
-    n_fold = 5
-    folds = KFold(n_splits=n_fold, shuffle=True, random_state=11)
-    cv = ShuffleSplit(n_splits=n_fold, test_size=0.3,
-                      random_state=17)
-    # calcuate ROC-AUC for each split
-    cv_scores_rf = cross_val_score(model_rf, train_x, train_y, cv=cv, scoring='roc_auc')
-    print(cv_scores_rf)
+def random_forest(train_x, test_x, train_y, test_y, tree_depth=7, bootstrap=True):
+    model_rf = RandomForestClassifier(n_estimators=200, max_depth=tree_depth, bootstrap=bootstrap, random_state=17)
     model_rf.fit(train_x, train_y)
-    y_scores = model_rf.predict(test_x)
-    print(classification_report(test_y.values, y_scores))
+    train_predict = model_rf.predict(train_x)
+    test_predict = model_rf.predict(test_x)
+
+    train_predict_proba = model_rf.predict_proba(train_x)[::,1]
+    test_predict_proba = model_rf.predict_proba(test_x)[::,1]
+    return train_predict, test_predict, train_predict_proba, test_predict_proba
+
+
+def xgboost_forest(train_x, test_x, train_y, test_y, tree_depth=7, bootstrap=True):
+    model_rf = XGBClassifier(n_estimators=200, max_depth=tree_depth, bootstrap=bootstrap, random_state=17)
+    model_rf.fit(train_x, train_y)
+    train_predict = model_rf.predict(train_x)
+    test_predict = model_rf.predict(test_x)
+
+    train_predict_proba = model_rf.predict_proba(train_x)[::,1]
+    test_predict_proba = model_rf.predict_proba(test_x)[::,1]
+    return train_predict, test_predict, train_predict_proba, test_predict_proba
+
+
+def catboost_forest(train_x, test_x, train_y, test_y, tree_depth=7):
+    model_rf = CatBoostClassifier(n_estimators=200, max_depth=tree_depth, random_state=17)
+    model_rf.fit(train_x, train_y)
+    train_predict = model_rf.predict(train_x)
+    test_predict = model_rf.predict(test_x)
+    train_predict_proba = model_rf.predict_proba(train_x)[::,1]
+    test_predict_proba = model_rf.predict_proba(test_x)[::,1]
+    return train_predict, test_predict, train_predict_proba, test_predict_proba
+
+
+def lgbm_forest(train_x, test_x, train_y, test_y, tree_depth=7, num_leaves=10):
+    model_rf = LGBMClassifier(n_estimators=200, max_depth=tree_depth, num_leaves=num_leaves, random_state=17)
+    model_rf.fit(train_x, train_y)
+    train_predict = model_rf.predict(train_x)
+    test_predict = model_rf.predict(test_x)
+    train_predict_proba = model_rf.predict_proba(train_x)[::,1]
+    test_predict_proba = model_rf.predict_proba(test_x)[::,1]
+    return train_predict, test_predict, train_predict_proba, test_predict_proba
 

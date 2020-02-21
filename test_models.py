@@ -1,6 +1,8 @@
+from sklearn import metrics
+
 from train_models import split_dataset, linear_regression, linear_regression_rfe, split_scikit, logistic_regression_rfe, \
-    decision_tree, random_forest
-from training_metrics import class_report
+    decision_tree, random_forest, xgboost_forest, catboost_forest, lgbm_forest
+from training_metrics import class_report, plot_roc_auc
 from utils import read_file_local
 
 
@@ -37,9 +39,11 @@ def test_log_regr_rfe():
     train_x, test_x, train_y, test_y = split_scikit(
         dataset[features], dataset['Y'], test_size=0.4
     )
-    train_predict, test_predict = logistic_regression_rfe(train_x, test_x, train_y, test_y, 2)
+    train_predict, test_predict, train_predict_proba, test_predict_proba = logistic_regression_rfe(train_x, test_x, train_y, test_y, 2)
     print(class_report(train_predict, train_y))
     print(class_report(test_predict, test_y))
+    plot_roc_auc(test_predict_proba, test_y)
+    plot_roc_auc(train_predict_proba, train_y)
 
 
 def test_decision_tree():
@@ -48,20 +52,61 @@ def test_decision_tree():
     train_x, test_x, train_y, test_y = split_scikit(
         dataset[features], dataset['Y'], test_size=0.4
     )
-    train_predict, test_predict = decision_tree(train_x, test_x, train_y, test_y, 26)
+    train_predict, test_predict, train_predict_proba, test_predict_proba = decision_tree(train_x, test_x, train_y, test_y, 26)
     print(class_report(train_predict, train_y))
     print(class_report(test_predict, test_y))
+
 
 def test_random_forest():
     dataset = read_file_local('data_files/original_ds_normalized.csv')
     features = [f for f in dataset.columns.tolist() if not f == "Y"]
     train_x, test_x, train_y, test_y = split_scikit(
-        dataset[features], dataset['Y'], test_size=0.4
+        dataset[features], dataset['Y'], test_size=0.6
     )
-    random_forest(train_x, test_x, train_y, test_y, 5)
+    train_predict, test_predict, train_predict_proba, test_predict_proba = random_forest(train_x, test_x, train_y, test_y)
+    print(class_report(train_predict, train_y))
+    print(class_report(test_predict, test_y))
 
-test_lin_regr_rfe()
+
+def test_xgb_forest():
+    dataset = read_file_local('data_files/original_ds_normalized.csv')
+    features = [f for f in dataset.columns.tolist() if not f == "Y"]
+    train_x, test_x, train_y, test_y = split_scikit(
+        dataset[features], dataset['Y'], test_size=0.6
+    )
+    train_predict, test_predict, train_predict_proba, test_predict_proba = xgboost_forest(train_x, test_x, train_y, test_y)
+    print(class_report(train_predict, train_y))
+    print(class_report(test_predict, test_y))
+
+
+def test_catboost_forest():
+    dataset = read_file_local('data_files/original_ds_normalized.csv')
+    features = [f for f in dataset.columns.tolist() if not f == "Y"]
+    train_x, test_x, train_y, test_y = split_scikit(
+        dataset[features], dataset['Y'], test_size=0.6
+    )
+    train_predict, test_predict, train_predict_proba, test_predict_proba = catboost_forest(train_x, test_x, train_y, test_y)
+    print(class_report(train_predict, train_y))
+    print(class_report(test_predict, test_y))
+
+
+def test_lgbm_forest():
+    dataset = read_file_local('data_files/original_ds_normalized.csv')
+    features = [f for f in dataset.columns.tolist() if not f == "Y"]
+    train_x, test_x, train_y, test_y = split_scikit(
+        dataset[features], dataset['Y'], test_size=0.6
+    )
+    train_predict, test_predict, train_predict_proba, test_predict_proba = lgbm_forest(train_x, test_x, train_y, test_y)
+    print(class_report(train_predict, train_y))
+    print(class_report(test_predict, test_y))
+    plot_roc_auc(test_predict_proba, test_y)
+    plot_roc_auc(train_predict_proba, train_y)
+
+
+# test_lin_regr()
 test_log_regr_rfe()
-test_decision_tree()
+# test_decision_tree()
 # test_random_forest()
-test_lin_regr()
+# test_xgb_forest()
+# test_lgbm_forest()
+# test_catboost_forest()
