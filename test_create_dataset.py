@@ -52,12 +52,12 @@ def test_full_dataset():
     players["kda"] = players[['deaths', 'kills', 'assists']].apply(get_kda, axis=1)
     players["net_worth"] = players[['gold', 'gold_spent']].apply(get_net_worth, axis=1)
     players["duration_heroes"] = players[['hero_id']].apply(lambda x: get_hero_avg_duration(x, duration_heroes), axis=1)
-
+    observed_features = ['gold_per_min', 'xp_per_min', 'denies', 'last_hits', 'hero_damage',
+                         'hero_healing', 'tower_damage', 'kda', 'net_worth', 'duration_heroes',]
     create_dataset_with_features(players=players, matches=read_file_local('data_files/match.csv'),
-                                 feature_list=[
-                                     'gold_per_min', 'xp_per_min', 'denies', 'last_hits', 'hero_damage',
-                                     'hero_healing', 'tower_damage', 'kda', 'net_worth', 'duration_heroes',
-                                 ]).to_csv("data_files/original_ds_not_normalized.csv", index=False)
+                                 observed_features=observed_features,
+                                 all_features=observed_features + ["hero_relative_strength"]
+                                 ).to_csv("data_files/original_ds_not_normalized1.csv", index=False)
 
 
 test_full_dataset()

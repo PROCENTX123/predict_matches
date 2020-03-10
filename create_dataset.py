@@ -144,8 +144,8 @@ def create_team_feature_dataset(matches, players, avg_stats, hero_pairs):
     return feature_dataset_by_team.fillna(0)
 
 
-def create_dataset_with_features(players, matches, feature_list):
-    avg_stats = player_avg_stats(matches, players, feature_list)
+def create_dataset_with_features(players, matches, observed_features, all_features):
+    avg_stats = player_avg_stats(matches, players, observed_features)
     hero_pairs = get_hero_pairs(players, matches)
-    return create_team_feature_dataset(matches, players, avg_stats, hero_pairs)
+    return create_team_feature_dataset(matches, players, avg_stats, hero_pairs)[all_features + ['Y']]
 
